@@ -218,6 +218,7 @@ dd$label[dd$metarea=="Worcester, MA"] <- "Worcester, MA"
 dd$label[dd$metarea=="Yakima, WA"] <- ""
 dd$label[dd$metarea=="York, PA"] <- ""
 dd$label[dd$metarea=="Youngstown-Warren, OH-PA"] <- ""
+dd$label[dd$metarea=="Newburgh-Middletown, NY"] <- "Newburgh-Middletown, NY"
 
 dd$pos <- 4
 dd$pos[dd$metarea=="Austin, TX"] <- 3

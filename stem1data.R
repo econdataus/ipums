@@ -8,6 +8,7 @@ read_ip <- function(aa, year, file) {
 	if (year > 2007) {
 		print("Create mm$WKSWORK1")
 		mm$WKSWORK1 <- 0
+		#(mm$WKSWORK2)==2 is "N/A"
 		mm$WKSWORK1[as.integer(mm$WKSWORK2)==2] <- 7
 		mm$WKSWORK1[as.integer(mm$WKSWORK2)==3] <- 20
 		mm$WKSWORK1[as.integer(mm$WKSWORK2)==4] <- 33
@@ -23,7 +24,10 @@ read_ip <- function(aa, year, file) {
 	mm <- mm[as.integer(mm$gq) != 4,]
 	print(sprintf("%d  Non-institutional", dim(mm)[1]))
 	mm <- mm[as.integer(mm$OCC1990) <= 386,]
-	print(sprintf("%d  Occupation not Military, Unemployed, or Unknown", dim(mm)[1]))
+	print(sprintf("%d  Occupation not Military, Unemployed or Unknown", dim(mm)[1]))
+	#mm <- mm[as.integer(mm$bpl) <= 160,]
+	mm <- mm[!(as.integer(mm$bpld) %in% c(524,525,527,530,531)),]
+	print(sprintf("%d  Birthplace not Abroad, At sea, Other or Missing", dim(mm)[1]))
 	mm <- mm[mm$metarea %in% mets$metarea,]
 	print(sprintf("%d  Metareas (219)", dim(mm)[1]))
 	mm$immig    <- as.integer(as.integer(mm$citizen) >= 3)
@@ -81,6 +85,20 @@ print(sprintf("ALL IPUMS FILES READ"))
 #readline("Press enter to continue, escape to exit")
 print(sprintf("START OF AGGREGATE AND MERGE INTO FINAL FILES"))
 
+#native_non_coll  <- aa[aa$emp==1 & aa$immig==0 & aa$coll==0,]
+#native_coll      <- aa[aa$emp==1 & aa$immig==0 & aa$coll==1,]
+#immig_coll       <- aa[aa$emp==1 & aa$immig==1 & aa$coll==1,]
+#total_coll       <- aa[aa$emp==1 &               aa$coll==1,]
+#native_stem      <- aa[aa$emp==1 & aa$immig==0              & aa$stem==1,]
+#immig_stem       <- aa[aa$emp==1 & aa$immig==1              & aa$stem==1,]
+#total_stem       <- aa[aa$emp==1 &                            aa$stem==1,]
+#native_coll_stem <- aa[aa$emp==1 & aa$immig==0 & aa$coll==1 & aa$stem==1,]
+#immig_coll_stem  <- aa[aa$emp==1 & aa$immig==1 & aa$coll==1 & aa$stem==1,]
+#total_coll_stem  <- aa[aa$emp==1 &               aa$coll==1 & aa$stem==1,]
+#total_native     <- aa[aa$emp==1 & aa$immig==0,]
+#total_immig      <- aa[aa$emp==1 & aa$immig==1,]
+#total_pop        <- aa[aa$emp==1,] 
+
 native_non_coll  <- aa[aa$immig==0 & aa$coll==0,]
 native_coll      <- aa[aa$immig==0 & aa$coll==1,]
 immig_coll       <- aa[aa$immig==1 & aa$coll==1,]
@@ -91,7 +109,9 @@ total_stem       <- aa[                           aa$stem==1,]
 native_coll_stem <- aa[aa$immig==0 & aa$coll==1 & aa$stem==1,]
 immig_coll_stem  <- aa[aa$immig==1 & aa$coll==1 & aa$stem==1,]
 total_coll_stem  <- aa[              aa$coll==1 & aa$stem==1,]
-pop_total        <- aa
+total_native     <- aa[aa$immig==0,]
+total_immig      <- aa[aa$immig==1,]
+total_pop        <- aa 
 
 native_non_coll  <- aggdf(native_non_coll)
 native_coll      <- aggdf(native_coll)
@@ -103,7 +123,9 @@ total_stem       <- aggdf(total_stem)
 native_coll_stem <- aggdf(native_coll_stem)
 immig_coll_stem  <- aggdf(immig_coll_stem)
 total_coll_stem  <- aggdf(total_coll_stem)
-pop_total        <- aggdf(pop_total)
+total_native     <- aggdf(total_native)
+total_immig      <- aggdf(total_immig)
+total_pop        <- aggdf(total_pop)
 
 colnames(native_non_coll)  [colnames(native_non_coll) =="V1"] <- "native_non_coll"
 colnames(native_coll)      [colnames(native_coll)     =="V1"] <- "native_coll"
@@ -115,7 +137,9 @@ colnames(total_stem)       [colnames(total_stem)      =="V1"] <- "total_stem"
 colnames(native_coll_stem) [colnames(native_coll_stem)=="V1"] <- "native_coll_stem"
 colnames(immig_coll_stem)  [colnames(immig_coll_stem) =="V1"] <- "immig_coll_stem"
 colnames(total_coll_stem)  [colnames(total_coll_stem) =="V1"] <- "total_coll_stem"
-colnames(pop_total)        [colnames(pop_total)       =="V1"] <- "pop_total"    
+colnames(total_native)     [colnames(total_native)    =="V1"] <- "total_native"    
+colnames(total_immig)      [colnames(total_immig)     =="V1"] <- "total_immig"    
+colnames(total_pop)        [colnames(total_pop)       =="V1"] <- "total_pop"    
 
 native_non_coll$native_non_coll_wkwage   <- native_non_coll$V2  /  native_non_coll$V3
 native_coll$native_coll_wkwage           <- native_coll$V2      / native_coll$V3
@@ -127,7 +151,9 @@ total_stem$total_stem_wkwage             <- total_stem$V2       / total_stem$V3
 native_coll_stem$native_coll_stem_wkwage <- native_coll_stem$V2 / native_coll_stem$V3
 immig_coll_stem$immig_coll_stem_wkwage   <- immig_coll_stem$V2  / immig_coll_stem$V3
 total_coll_stem$total_coll_stem_wkwage   <- total_coll_stem$V2  / total_coll_stem$V3
-pop_total$pop_total_wkwage               <- pop_total$V2        / pop_total$V3
+total_native$total_native_wkwage         <- total_native$V2     / total_native$V3
+total_immig$total_immig_wkwage           <- total_immig$V2      / total_immig$V3
+total_pop$total_pop_wkwage               <- total_pop$V2        / total_pop$V3
 
 native_non_coll$V2  <- NULL
 native_coll$V2      <- NULL
@@ -139,7 +165,9 @@ total_stem$V2       <- NULL
 native_coll_stem$V2 <- NULL
 immig_coll_stem$V2  <- NULL
 total_coll_stem$V2  <- NULL
-pop_total$V2        <- NULL
+total_native$V2     <- NULL
+total_immig$V2      <- NULL
+total_pop$V2        <- NULL
 
 native_non_coll$V3  <- NULL
 native_coll$V3      <- NULL
@@ -151,7 +179,9 @@ total_stem$V3       <- NULL
 native_coll_stem$V3 <- NULL
 immig_coll_stem$V3  <- NULL
 total_coll_stem$V3  <- NULL
-pop_total$V3        <- NULL
+total_native$V3     <- NULL
+total_immig$V3      <- NULL
+total_pop$V3        <- NULL
 
 cc <- native_non_coll
 cc <- mergedf(cc, native_coll)
@@ -163,7 +193,9 @@ cc <- mergedf(cc, total_stem)
 cc <- mergedf(cc, native_coll_stem)
 cc <- mergedf(cc, immig_coll_stem)
 cc <- mergedf(cc, total_coll_stem)
-cc <- mergedf(cc, pop_total)
+cc <- mergedf(cc, total_native)
+cc <- mergedf(cc, total_immig)
+cc <- mergedf(cc, total_pop)
 
 #cc <- cc[with(cc, order(metarea,year)),]
 #count_nas_all(cc)
